@@ -1,6 +1,7 @@
 import * as express from 'express';
 import { GameInfo, Tile, Point, UpgradeType } from '../interfaces';
 import { AIHelper } from '../aiHelper';
+import { aStarFinder } from "./../astar";
 
 module Route {
 
@@ -72,7 +73,7 @@ module Route {
         }
 
         private static getAction(map: Tile[][], gameInfo: GameInfo) {
-            const home = gameInfo.Player.HouseLocation;
+            /*const home = gameInfo.Player.HouseLocation;
             const currentPosition = gameInfo.Player.Position;
             const mines = Index.getMinerals(map);
             if (Index.destination !== undefined && !Index.destinationIsHome(gameInfo) && Index.destinationIsNotAMine(mines)) {
@@ -104,7 +105,9 @@ module Route {
                     Index.destination = Index.getPathToDestination(home, currentPosition);
                     return AIHelper.createMoveAction(Index.destination);
                 }
-            }
+            }*/
+        
+           console.log(this.findOptimalPathMine(this.getMinerals(map), map, gameInfo));
         }
 
         private static getMineableMinerals (map: Tile[][], gameInfo: GameInfo): Array<Point> {
@@ -147,6 +150,26 @@ module Route {
                 line += map[x][0].Position.X + ' ';
             }
             console.log(line);
+        }
+        private static findOptimalPathMine(mines:Array<Tile>, map:Tile[][], gameInfo: GameInfo): Array<Point> {
+            let aStar = new aStarFinder(map, gameInfo);
+            let bestPath: Array<Point>;
+            let optimalLength: number = Infinity;
+            let playerPosition = new Point(10, 10);
+            mines.forEach((mine) => {
+                let minePosition = new Point(10 + (mine.Position.X - gameInfo.Player.Position.X), 10 + (mine.Position.Y - gameInfo.Player.Position.Y));
+                let path = aStar.generatePath(playerPosition, minePosition);
+                if(path.length < optimalLength && path.length > 0) {
+                    optimalLength = path.length;
+                    let pointArray : Array<Point> = [];
+                    path.forEach((position: any) => {
+                        let point = new Point(position[0], position[1]);
+                        pointArray.push(point);
+                    });
+                    bestPath = pointArray;
+                }
+            });
+            return bestPath;
         }
 
         public index(req: express.Request, res: express.Response, next: express.NextFunction) {
