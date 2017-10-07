@@ -1,5 +1,5 @@
 import * as express from 'express';
-import { GameInfo, Tile, Point, UpgradeType } from '../interfaces';
+import { GameInfo, Tile, Point, UpgradeType, TileContent } from '../interfaces';
 import { AIHelper } from '../aiHelper';
 import { aStarFinder } from "./../astar";
 
@@ -72,12 +72,20 @@ module Route {
             }
         }
 
+        private static isTree(point: Point, map: Tile[][]): boolean {
+            return map[point.X][point.Y].Content === TileContent.Wall;
+        }
+
         private static getAction(map: Tile[][], gameInfo: GameInfo) {
             const home = gameInfo.Player.HouseLocation;
             const mines = Index.getMinerals(map);
             if (Index.destination !== undefined && !Index.destinationIsHome(gameInfo) && Index.destinationIsNotAMine(mines)) {
                 Index.destination = home;
-                return AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
+                const nextPosition = Index.aStarToDestination(map, gameInfo);
+                if (Index.isTree(nextPosition, map)) {
+                    return AIHelper.createAttackAction(nextPosition);
+                }
+                return AIHelper.createMoveAction(nextPosition);
             }
 
             const mineableMinerals = Index.getMineableMinerals(map, gameInfo);
@@ -85,7 +93,11 @@ module Route {
                 return AIHelper.createCollectAction(mineableMinerals[0]);
             } else if (Index.backPackIsFull(gameInfo)) {
                 Index.destination = home;
-                return AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
+                const nextPosition = Index.aStarToDestination(map, gameInfo);
+                if (Index.isTree(nextPosition, map)) {
+                    return AIHelper.createAttackAction(nextPosition);
+                }
+                return AIHelper.createMoveAction(nextPosition);
             } else {
                 if (Index.destination === undefined || (gameInfo.Player.Position.X === home.X && gameInfo.Player.Position.Y === home.Y)) {
                     Index.destination = undefined;
@@ -95,9 +107,17 @@ module Route {
                         return action;
                     }
                     Index.destination = Index.findOptimalPathMine(mines, map, gameInfo);
-                    return AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
+                    const nextPosition = Index.aStarToDestination(map, gameInfo);
+                    if (Index.isTree(nextPosition, map)) {
+                        return AIHelper.createAttackAction(nextPosition);
+                    }
+                    return AIHelper.createMoveAction(nextPosition);
                 } else {
-                    return AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
+                    const nextPosition = Index.aStarToDestination(map, gameInfo);
+                    if (Index.isTree(nextPosition, map)) {
+                        return AIHelper.createAttackAction(nextPosition);
+                    }
+                    return AIHelper.createMoveAction(nextPosition);
                 }
             }
         }

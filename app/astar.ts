@@ -30,7 +30,7 @@ export class aStarFinder {
                         case(TileContent.Player): matrix[j][i] = 1; break;
                         case(TileContent.Resource): matrix[j][i] = 0; break;
                         case(TileContent.Shop): matrix[j][i] = 1; break;
-                        case(TileContent.Wall): matrix[j][i] = 1; break;
+                        case(TileContent.Wall): matrix[j][i] = 0; break;
                     }
                 }
             }

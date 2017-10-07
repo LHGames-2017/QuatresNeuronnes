@@ -36,7 +36,7 @@ class aStarFinder {
                             matrix[j][i] = 1;
                             break;
                         case (interfaces_1.TileContent.Wall):
-                            matrix[j][i] = 1;
+                            matrix[j][i] = 0;
                             break;
                     }
                 }
