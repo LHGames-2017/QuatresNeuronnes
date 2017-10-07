@@ -79,6 +79,8 @@ var Route;
             let playerPosition = new interfaces_1.Point(10, 10);
             mines.forEach((mine) => {
                 let minePosition = new interfaces_1.Point(10 + (mine.Position.X - gameInfo.Player.Position.X), 10 + (mine.Position.Y - gameInfo.Player.Position.Y));
+                console.log(minePosition);
+                console.log(playerPosition);
                 let path = aStar.generatePath(playerPosition, minePosition);
                 if (path.length < optimalLength && path.length > 0) {
                     optimalLength = path.length;
@@ -97,7 +99,7 @@ var Route;
             const map = Index.decompressMap(mapData.CustomSerializedMap);
             Index.printMap(map);
             let action = Index.getAction(map, mapData);
-            res.send(action);
+            //res.send(action);
         }
         ping(req, res, next) {
             res.json({ success: true, test: false });

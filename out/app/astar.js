@@ -10,47 +10,41 @@ class aStarFinder {
         for (let i = 0; i < 20; i++) {
             matrix.push([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         }
-        let x = 0;
-        let y = 19;
         console.log('here');
-        for (let i = gameInfo.Player.Position.X - 10; i < gameInfo.Player.Position.X + 10; i++) {
-            for (let j = gameInfo.Player.Position.Y - 10; j < gameInfo.Player.Position.Y + 10; j++) {
-                console.log('test i ' + i + ' j ' + j);
-                if ((i === gameInfo.Player.Position.X) && (j === gameInfo.Player.Position.Y)) {
+        for (let i = 0; i < 20; i++) {
+            for (let j = 0; j < 20; j++) {
+                if ((i === 10) && (j === 10)) {
                     console.log('in if');
-                    matrix[x][y] = 0;
+                    matrix[j][i] = 0;
                 }
                 else {
-                    console.log('content ' + map[i][j].Content);
                     switch (map[i][j].Content) {
                         case (interfaces_1.TileContent.Empty):
-                            matrix[x][y] = 0;
+                            matrix[j][i] = 0;
                             break;
                         case (interfaces_1.TileContent.House):
-                            matrix[x][y] = 1;
+                            matrix[j][i] = 0;
                             break;
                         case (interfaces_1.TileContent.Lava):
-                            matrix[x][y] = 1;
+                            matrix[j][i] = 1;
                             break;
                         case (interfaces_1.TileContent.Player):
-                            matrix[x][y] = 1;
+                            matrix[j][i] = 1;
                             break;
                         case (interfaces_1.TileContent.Resource):
-                            matrix[x][y] = 1;
+                            matrix[j][i] = 0;
                             break;
                         case (interfaces_1.TileContent.Shop):
-                            matrix[x][y] = 1;
+                            matrix[j][i] = 1;
                             break;
                         case (interfaces_1.TileContent.Wall):
-                            matrix[x][y] = 1;
+                            matrix[j][i] = 1;
                             break;
                     }
                 }
-                y--;
             }
-            y = 19;
-            x++;
         }
+        console.log('MATRIX');
         console.log(matrix);
         this.m_grid = new AStar.Grid(matrix);
         let diagonalMovement = false;

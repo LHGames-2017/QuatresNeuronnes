@@ -17,33 +17,25 @@ export class aStarFinder {
         for (let i = 0; i < 20; i++){
             matrix.push([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
         }
-        let x = 0;
-        let y = 19;
         console.log('here');
-        for ( let i = gameInfo.Player.Position.X - 10; i < gameInfo.Player.Position.X + 10; i++) {
-            for ( let j = gameInfo.Player.Position.Y - 10; j <gameInfo.Player.Position.Y + 10; j++) {
-                console.log('test i ' + i + ' j ' + j);
-                if ((i === gameInfo.Player.Position.X) && (j === gameInfo.Player.Position.Y)) {
+        for ( let i = 0; i < 20; i++) {
+            for ( let j = 0; j < 20; j++) {
+                if ((i === 10) && (j === 10)) {
                     console.log('in if');
-                    matrix[x][y] = 0;
+                    matrix[j][i] = 0;
                 }else {
-                    console.log('content ' + map[i][j].Content);
                     switch (map[i][j].Content) {
-                        case (TileContent.Empty): matrix[x][y] = 0; break;
-                        case(TileContent.House): matrix[x][y] = 1; break;
-                        case(TileContent.Lava): matrix[x][y] = 1; break;
-                        case(TileContent.Player): matrix[x][y] = 1; break;
-                        case(TileContent.Resource): matrix[x][y] = 1; break;
-                        case(TileContent.Shop): matrix[x][y] = 1; break;
-                        case(TileContent.Wall): matrix[x][y] = 1; break;
+                        case (TileContent.Empty): matrix[j][i] = 0; break;
+                        case(TileContent.House): matrix[j][i] = 0; break;
+                        case(TileContent.Lava): matrix[j][i] = 1; break;
+                        case(TileContent.Player): matrix[j][i] = 1; break;
+                        case(TileContent.Resource): matrix[j][i] = 0; break;
+                        case(TileContent.Shop): matrix[j][i] = 1; break;
+                        case(TileContent.Wall): matrix[j][i] = 1; break;
                     }
                 }
-                y--;
             }
-            y = 19;
-            x++;
         }
-        console.log(matrix);
         this.m_grid = new AStar.Grid(matrix);
         let diagonalMovement = false;
         this.m_aStarInstance = new AStar.AStarFinder(this.m_grid, diagonalMovement);

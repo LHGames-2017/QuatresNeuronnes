@@ -87,9 +87,11 @@ module Route {
             let aStar = new aStarFinder(map, gameInfo);
             let bestPath: Array<Point>;
             let optimalLength: number = Infinity;
-            let playerPosition = new Point(10, 10);
+            let playerPosition: Point = new Point(10, 10);
             mines.forEach((mine) => {
-                let minePosition = new Point(10 + (mine.Position.X - gameInfo.Player.Position.X), 10 + (mine.Position.Y - gameInfo.Player.Position.Y));
+                let minePosition: Point = new Point(10 + (mine.Position.X - gameInfo.Player.Position.X), 10 + (mine.Position.Y - gameInfo.Player.Position.Y));
+                console.log(minePosition);
+                console.log(playerPosition);
                 let path = aStar.generatePath(playerPosition, minePosition);
                 if(path.length < optimalLength && path.length > 0) {
                     optimalLength = path.length;
