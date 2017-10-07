@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "node out/www.js",
+    "start": "node out/app/www.js",
     "lint": "tslint app/**/*.ts app/*.ts --force -t verbose",
     "test": "tsc && concurrently \"tsc -w\" \"karma start karma.conf.js\"",
     "test-once": "tsc && karma start karma.conf.js --single-run || npm run-script coverage",
@@ -15,11 +15,13 @@
     "postinstall": "rimraf false"
   },
   "dependencies": {
+    "@types/lodash": "^4.14.77",
     "body-parser": "~1.16.0",
     "cookie-parser": "~1.4.0",
     "cors": "~2.8.1",
     "debug": "~2.2.0",
     "express": "4.15.4",
+    "lodash": "^4.17.4",
     "morgan": "1.7.0",
     "systemjs": "0.19.39"
   },
