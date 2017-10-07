@@ -72,17 +72,21 @@ module Route {
             }
         }
 
-        private static isTree(point: Point, map: Tile[][]): boolean {
-            return map[point.X][point.Y].Content === TileContent.Wall;
+        private static isTree(point: Point, map: Tile[][], gameInfo: GameInfo): boolean {
+            const xPosition = point.X + 10 - gameInfo.Player.Position.X;
+            const yPosition = point.Y + 10 - gameInfo.Player.Position.Y;
+            return map[xPosition][yPosition].Content === TileContent.Wall;
         }
 
         private static getAction(map: Tile[][], gameInfo: GameInfo) {
+            console.log('jackPot: ' + gameInfo.Player.TotalResources);
             const home = gameInfo.Player.HouseLocation;
             const mines = Index.getMinerals(map);
             if (Index.destination !== undefined && !Index.destinationIsHome(gameInfo) && Index.destinationIsNotAMine(mines)) {
                 Index.destination = home;
                 const nextPosition = Index.aStarToDestination(map, gameInfo);
-                if (Index.isTree(nextPosition, map)) {
+                if (Index.isTree(nextPosition, map, gameInfo)) {
+                    console.log('is TREE');
                     return AIHelper.createAttackAction(nextPosition);
                 }
                 return AIHelper.createMoveAction(nextPosition);
@@ -94,7 +98,7 @@ module Route {
             } else if (Index.backPackIsFull(gameInfo)) {
                 Index.destination = home;
                 const nextPosition = Index.aStarToDestination(map, gameInfo);
-                if (Index.isTree(nextPosition, map)) {
+                if (Index.isTree(nextPosition, map, gameInfo)) {
                     return AIHelper.createAttackAction(nextPosition);
                 }
                 return AIHelper.createMoveAction(nextPosition);
@@ -108,13 +112,13 @@ module Route {
                     }
                     Index.destination = Index.findOptimalPathMine(mines, map, gameInfo);
                     const nextPosition = Index.aStarToDestination(map, gameInfo);
-                    if (Index.isTree(nextPosition, map)) {
+                    if (Index.isTree(nextPosition, map, gameInfo)) {
                         return AIHelper.createAttackAction(nextPosition);
                     }
                     return AIHelper.createMoveAction(nextPosition);
                 } else {
                     const nextPosition = Index.aStarToDestination(map, gameInfo);
-                    if (Index.isTree(nextPosition, map)) {
+                    if (Index.isTree(nextPosition, map, gameInfo)) {
                         return AIHelper.createAttackAction(nextPosition);
                     }
                     return AIHelper.createMoveAction(nextPosition);
