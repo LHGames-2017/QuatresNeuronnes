@@ -32,7 +32,22 @@ module Route {
         public index(req: express.Request, res: express.Response, next: express.NextFunction) {
             const mapData = JSON.parse(req.body.map) as GameInfo;
             const map = Index.decompressMap(mapData.CustomSerializedMap);
-
+            for (let y = 19; y >= 0; y--) {
+                let line = '';
+                line += map[0][y].Position.Y + ' ';
+                if (map[0][y].Position.Y < 10) {
+                    line += ' ';
+                }
+                for (let x = 0; x < 20; x++) {
+                    line += map[x][y].Content + '  ';
+                }
+                console.log(line);
+            }
+            let line = '   ';
+            for (let x = 0; x < 20; x++) {
+                line += map[x][0].Position.X + ' ';
+            }
+            console.log(line);
             let action = Index.getAction(map, mapData);
             res.send(action);
         }
