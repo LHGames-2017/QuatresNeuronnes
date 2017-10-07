@@ -15,7 +15,5 @@ RUN cp -a /tmp/node_modules /usr/src/app
 # Bundle app source
 ADD . /usr/src/app
 
-RUN npm run tsc
-
 EXPOSE 8080
 CMD [ "npm", "start" ]
