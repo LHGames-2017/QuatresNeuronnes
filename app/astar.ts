@@ -17,11 +17,10 @@ export class aStarFinder {
         for (let i = 0; i < 20; i++){
             matrix.push([0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]);
         }
-        console.log('here');
+        
         for ( let i = 0; i < 20; i++) {
             for ( let j = 0; j < 20; j++) {
                 if ((i === 10) && (j === 10)) {
-                    console.log('in if');
                     matrix[j][i] = 0;
                 }else {
                     switch (map[i][j].Content) {

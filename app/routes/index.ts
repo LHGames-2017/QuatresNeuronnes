@@ -73,41 +73,33 @@ module Route {
         }
 
         private static getAction(map: Tile[][], gameInfo: GameInfo) {
-            /*const home = gameInfo.Player.HouseLocation;
-            const currentPosition = gameInfo.Player.Position;
+            const home = gameInfo.Player.HouseLocation;
             const mines = Index.getMinerals(map);
             if (Index.destination !== undefined && !Index.destinationIsHome(gameInfo) && Index.destinationIsNotAMine(mines)) {
-                Index.destination = Index.getPathToDestination(home, currentPosition);
-                return AIHelper.createMoveAction(Index.destination);
+                Index.destination = home;
+                return AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
             }
 
             const mineableMinerals = Index.getMineableMinerals(map, gameInfo);
             if (mineableMinerals.length > 0 && !Index.backPackIsFull(gameInfo)) {
-                console.log('Mining');
-                console.log(gameInfo.Player.CarriedResources);
                 return AIHelper.createCollectAction(mineableMinerals[0]);
             } else if (Index.backPackIsFull(gameInfo)) {
-                Index.destination = Index.getPathToDestination(home, currentPosition);
-                return AIHelper.createMoveAction(Index.destination);
+                Index.destination = home;
+                return AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
             } else {
-                if (Index.destination === undefined) {
+                if (Index.destination === undefined || (gameInfo.Player.Position.X === home.X && gameInfo.Player.Position.Y === home.Y)) {
+                    Index.destination = undefined;
                     if (gameInfo.Player.TotalResources >= Index.price) {
                         const action = AIHelper.createUpgradeAction(Index.upgradeType);
                         Index.changePrice();
                         return action;
                     }
-                    Index.destination = Index.getNearestMine();
-                    return AIHelper.createMoveAction(Index.destination);
-                } else if (Index.destination === home) {
-                    Index.destination = undefined;
-                    return;
+                    Index.destination = Index.findOptimalPathMine(mines, map, gameInfo);
+                    return AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
                 } else {
-                    Index.destination = Index.getPathToDestination(home, currentPosition);
-                    return AIHelper.createMoveAction(Index.destination);
+                    return AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
                 }
-            }*/
-        
-           console.log(this.findOptimalPathMine(this.getMinerals(map), map, gameInfo));
+            }
         }
 
         private static getMineableMinerals (map: Tile[][], gameInfo: GameInfo): Array<Point> {
@@ -141,7 +133,11 @@ module Route {
                     line += ' ';
                 }
                 for (let x = 0; x < 20; x++) {
-                    line += map[x][y].Content + '  ';
+                    if (map[x][y].Content !== 0) {
+                        line += map[x][y].Content + '  ';
+                    } else {
+                        line += '   ';
+                    }
                 }
                 console.log(line);
             }
@@ -151,27 +147,32 @@ module Route {
             }
             console.log(line);
         }
-        private static findOptimalPathMine(mines:Array<Tile>, map:Tile[][], gameInfo: GameInfo): Array<Point> {
+
+        private static aStarToDestination(map: Tile[][], gameInfo: GameInfo) {
             let aStar = new aStarFinder(map, gameInfo);
-            let bestPath: Array<Point>;
+             let goal = new Point(10 + (Index.destination.X - gameInfo.Player.Position.X), 10 + (Index.destination.Y - gameInfo.Player.Position.Y));
+            let playerPosition = new Point(10, 10);
+            let path = aStar.generatePath(playerPosition, goal);
+
+            return new Point(path[1][0] - 10 + gameInfo.Player.Position.X, path[1][1] - 10 + gameInfo.Player.Position.Y);
+        }
+
+        private static findOptimalPathMine(mines:Array<Tile>, map:Tile[][], gameInfo: GameInfo): Point {
+            let aStar = new aStarFinder(map, gameInfo);
+            let bestMine: Point;
             let optimalLength: number = Infinity;
             let playerPosition: Point = new Point(10, 10);
             mines.forEach((mine) => {
                 let minePosition: Point = new Point(10 + (mine.Position.X - gameInfo.Player.Position.X), 10 + (mine.Position.Y - gameInfo.Player.Position.Y));
-                console.log(minePosition);
-                console.log(playerPosition);
                 let path = aStar.generatePath(playerPosition, minePosition);
                 if(path.length < optimalLength && path.length > 0) {
+                    bestMine = mine.Position;
                     optimalLength = path.length;
-                    let pointArray : Array<Point> = [];
-                    path.forEach((position: any) => {
-                        let point = new Point(position[0], position[1]);
-                        pointArray.push(point);
-                    });
-                    bestPath = pointArray;
+
                 }
             });
-            return bestPath;
+
+            return bestMine;
         }
 
         public index(req: express.Request, res: express.Response, next: express.NextFunction) {
