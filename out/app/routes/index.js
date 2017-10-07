@@ -27,21 +27,80 @@ var Route;
             }
             return false;
         }
+        static destinationIsHome(gameInfo) {
+            return Index.destination.X === gameInfo.Player.HouseLocation.X && Index.destination.Y === gameInfo.Player.HouseLocation.Y;
+        }
+        static destinationIsNotAMine(mines) {
+            return mines.every((mine) => {
+                return Index.destination.X !== mine.Position.X && Index.destination.Y !== mine.Position.Y;
+            });
+        }
+        static changePrice() {
+            switch (Index.price) {
+                case 15000:
+                    Index.price = 50000;
+                    break;
+                case 50000:
+                    Index.price = 100000;
+                    break;
+                case 100000:
+                    Index.price = 250000;
+                    break;
+                case 250000:
+                    Index.price = 500000;
+                    break;
+                case 500000:
+                    Index.price = 15000;
+                    Index.upgradeType = Index.upgradeType + 1;
+                    break;
+                default:
+                    Index.price = 500000;
+            }
+        }
         static getAction(map, gameInfo) {
-            console.log(this.findOptimalPathMine(this.getMinerals(map), map, gameInfo));
+            const home = gameInfo.Player.HouseLocation;
+            const mines = Index.getMinerals(map);
+            if (Index.destination !== undefined && !Index.destinationIsHome(gameInfo) && Index.destinationIsNotAMine(mines)) {
+                Index.destination = home;
+                return aiHelper_1.AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
+            }
+            const mineableMinerals = Index.getMineableMinerals(map, gameInfo);
+            if (mineableMinerals.length > 0 && !Index.backPackIsFull(gameInfo)) {
+                console.log('Mining');
+                console.log(gameInfo.Player.CarriedResources);
+                return aiHelper_1.AIHelper.createCollectAction(mineableMinerals[0]);
+            }
+            else if (Index.backPackIsFull(gameInfo)) {
+                Index.destination = home;
+                return aiHelper_1.AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
+            }
+            else {
+                if (Index.destination === undefined || (gameInfo.Player.Position.X === home.X && gameInfo.Player.Position.Y === home.Y)) {
+                    Index.destination = undefined;
+                    if (gameInfo.Player.TotalResources >= Index.price) {
+                        const action = aiHelper_1.AIHelper.createUpgradeAction(Index.upgradeType);
+                        Index.changePrice();
+                        return action;
+                    }
+                    console.log('finding next mine');
+                    Index.destination = Index.findOptimalPathMine(mines, map, gameInfo);
+                    console.log(Index.destination);
+                    return aiHelper_1.AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
+                }
+                else {
+                    return aiHelper_1.AIHelper.createMoveAction(Index.aStarToDestination(map, gameInfo));
+                }
+            }
         }
         static getMineableMinerals(map, gameInfo) {
-            let mineableMinerals = new Array();
-            let mineralOnSight = Index.getMinerals(map);
+            const mineableMinerals = new Array();
+            const mineralOnSight = Index.getMinerals(map);
             mineralOnSight.forEach((tile) => {
                 if (tile.Position.Distance(gameInfo.Player.Position) <= 1) {
                     mineableMinerals.push(tile.Position);
                 }
             });
             return mineableMinerals;
-        }
-        static moveTo(position) {
-            return aiHelper_1.AIHelper.createMoveAction(position);
         }
         static getMinerals(map) {
             const minerals = new Array();
@@ -62,7 +121,12 @@ var Route;
                     line += ' ';
                 }
                 for (let x = 0; x < 20; x++) {
-                    line += map[x][y].Content + '  ';
+                    if (map[x][y].Content !== 0) {
+                        line += map[x][y].Content + '  ';
+                    }
+                    else {
+                        line += '   ';
+                    }
                 }
                 console.log(line);
             }
@@ -72,39 +136,41 @@ var Route;
             }
             console.log(line);
         }
+        static aStarToDestination(map, gameInfo) {
+            let aStar = new astar_1.aStarFinder(map, gameInfo);
+            let goal = new interfaces_1.Point(10 + (Index.destination.X - gameInfo.Player.Position.X), 10 + (Index.destination.Y - gameInfo.Player.Position.Y));
+            let playerPosition = new interfaces_1.Point(10, 10);
+            let path = aStar.generatePath(playerPosition, goal);
+            return new interfaces_1.Point(path[1][0] - 10 + gameInfo.Player.Position.X, path[1][1] - 10 + gameInfo.Player.Position.Y);
+        }
         static findOptimalPathMine(mines, map, gameInfo) {
             let aStar = new astar_1.aStarFinder(map, gameInfo);
-            let bestPath;
+            let bestMine;
             let optimalLength = Infinity;
             let playerPosition = new interfaces_1.Point(10, 10);
             mines.forEach((mine) => {
                 let minePosition = new interfaces_1.Point(10 + (mine.Position.X - gameInfo.Player.Position.X), 10 + (mine.Position.Y - gameInfo.Player.Position.Y));
-                console.log(minePosition);
-                console.log(playerPosition);
                 let path = aStar.generatePath(playerPosition, minePosition);
                 if (path.length < optimalLength && path.length > 0) {
+                    bestMine = mine.Position;
                     optimalLength = path.length;
-                    let pointArray = [];
-                    path.forEach((position) => {
-                        let point = new interfaces_1.Point(position[0], position[1]);
-                        pointArray.push(point);
-                    });
-                    bestPath = pointArray;
                 }
             });
-            return bestPath;
+            return bestMine;
         }
         index(req, res, next) {
             const mapData = JSON.parse(req.body.map);
             const map = Index.decompressMap(mapData.CustomSerializedMap);
             Index.printMap(map);
             let action = Index.getAction(map, mapData);
-            //res.send(action);
+            res.send(action);
         }
         ping(req, res, next) {
             res.json({ success: true, test: false });
         }
     }
+    Index.price = 15000;
+    Index.upgradeType = interfaces_1.UpgradeType.CarryingCapacity;
     Route.Index = Index;
 })(Route || (Route = {}));
 module.exports = Route;
