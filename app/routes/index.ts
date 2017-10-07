@@ -29,6 +29,18 @@ module Route {
 
         }
 
+        private static getMinerals(map: Tile[][]): Array<Tile> {
+            const minerals = new Array<Tile>();
+            map.forEach((line: Object[]) => {
+                line.forEach((tile: Tile) => {
+                    if (tile.Content === 4) {
+                        minerals.push(tile);
+                    }
+                });
+            });
+            return minerals;
+        }
+
         public index(req: express.Request, res: express.Response, next: express.NextFunction) {
             const mapData = JSON.parse(req.body.map) as GameInfo;
             const map = Index.decompressMap(mapData.CustomSerializedMap);
